@@ -1,29 +1,21 @@
 import os
 import cv2
 import face_recognition
-import numpy as np
 from tqdm import tqdm
 from collections import defaultdict
 from imutils.video import VideoStream
+from cv2.data import haarcascades
 from eye_status import *
-import tensorflow as tf
 
-gpus = tf.config.experimental.list_physical_devices('GPU')
-tf.config.experimental.set_memory_growth(gpus[0], True)
 
 def init():
-    face_cascPath = 'haarcascade_frontalface_alt.xml'
     # face_cascPath = 'lbpcascade_frontalface.xml'
-
-    open_eye_cascPath = 'haarcascade_eye_tree_eyeglasses.xml'
-    left_eye_cascPath = 'haarcascade_lefteye_2splits.xml'
-    right_eye_cascPath = 'haarcascade_righteye_2splits.xml'
     dataset = 'faces'
 
-    face_detector = cv2.CascadeClassifier(face_cascPath)
-    open_eyes_detector = cv2.CascadeClassifier(open_eye_cascPath)
-    left_eye_detector = cv2.CascadeClassifier(left_eye_cascPath)
-    right_eye_detector = cv2.CascadeClassifier(right_eye_cascPath)
+    face_detector = cv2.CascadeClassifier(os.path.join(haarcascades, 'haarcascade_frontalface_alt.xml'))
+    open_eyes_detector = cv2.CascadeClassifier(os.path.join(haarcascades, 'haarcascade_eye_tree_eyeglasses.xml'))
+    left_eye_detector = cv2.CascadeClassifier(os.path.join(haarcascades, 'haarcascade_lefteye_2splits.xml'))
+    right_eye_detector = cv2.CascadeClassifier(os.path.join(haarcascades, 'haarcascade_righteye_2splits.xml'))
 
     print("[LOG] Opening webcam ...")
     video_capture = VideoStream(src=0).start()
@@ -52,7 +44,7 @@ def process_and_encode(images):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         # detect face in the image and get its location (square boxes coordinates)
-        boxes = face_recognition.face_locations(image, model='cnn')
+        boxes = face_recognition.face_locations(image, model='hog')
 
         # Encode the face into a 128-d embeddings vector
         encoding = face_recognition.face_encodings(image, boxes)
